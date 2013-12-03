@@ -2,7 +2,9 @@ package cz.cuni.mff.d3s.cloudmigration.component;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import cz.cuni.mff.d3s.cloudmigration.data.ApplicationConfiguration;
 import cz.cuni.mff.d3s.cloudmigration.data.MonitorDefinition;
@@ -14,17 +16,17 @@ import cz.cuni.mff.d3s.deeco.task.ParamHolder;
 
 @Component
 public class Planner {
-	ApplicationConfiguration app;
+	public ApplicationConfiguration app;
 	
-	Collection<MonitorDefinition> plannerMonitorDefs;
-	Map<MonitorDefinition, Map<String, NFPData>> altNfpData;
-	Plan plan;
+	public Collection<MonitorDefinition> plannerMonitorDefs;
+	public Map<MonitorDefinition, Map<String, NFPData>> altNfpData;
+	public Plan plan;
 	
 	
 	public Planner(ApplicationConfiguration app) {
 		this.app = app;
 		plannerMonitorDefs = app.getMonitorDefinitions();
-		altNfpData = new HashMap<>();
+		altNfpData = new HashMap<>();		
 	}
 	
 	
@@ -38,6 +40,11 @@ public class Planner {
 			@Out("plan") ParamHolder<Plan> plan
 			) {
 		// TODO: compute plan;
+		Set<String> alternatives = new HashSet<>();
+		for (Map<String, NFPData> monitorData: altNfpData.values()) {
+			alternatives.addAll(monitorData.keySet());
+		}
+		System.out.println("Computing a plan for alternatives: " + alternatives.toString());
 	}
 	
 }

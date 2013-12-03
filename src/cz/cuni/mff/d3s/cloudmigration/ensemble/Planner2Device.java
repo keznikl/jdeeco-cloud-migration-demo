@@ -7,7 +7,7 @@ import cz.cuni.mff.d3s.deeco.annotations.*;
 import cz.cuni.mff.d3s.deeco.task.ParamHolder;
 
 @Ensemble
-@PeriodicScheduling(100)
+@PeriodicScheduling(2000)
 public class Planner2Device {
 	// TODO: represent roles explicitly
 	

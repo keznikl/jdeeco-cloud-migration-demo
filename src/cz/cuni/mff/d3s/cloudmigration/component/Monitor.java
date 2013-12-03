@@ -13,10 +13,10 @@ import cz.cuni.mff.d3s.deeco.task.ParamHolder;
 
 @Component
 public class Monitor {
-	MonitorDefinition monitorDef;
+	public MonitorDefinition monitorDef;
 	
-	NFPDeviceData monitorDeviceData;
-	NFPData monitorNfpData;
+	public NFPDeviceData monitorDeviceData;
+	public NFPData monitorNfpData;
 	
 	public Monitor(MonitorDefinition monitorDef) {
 		this.monitorDef = monitorDef;
