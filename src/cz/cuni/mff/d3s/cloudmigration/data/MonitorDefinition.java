@@ -43,6 +43,11 @@ public class MonitorDefinition implements Serializable {
 	}
 	
 	
+	@Override
+	public String toString() {
+		return String.format("Monitor(%s)", appComponentID);
+	}
+	
 	
 	
 }

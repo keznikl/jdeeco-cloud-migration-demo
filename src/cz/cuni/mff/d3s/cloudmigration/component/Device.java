@@ -1,5 +1,6 @@
 package cz.cuni.mff.d3s.cloudmigration.component;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,8 +12,10 @@ import cz.cuni.mff.d3s.cloudmigration.data.NFPDeviceData;
 import cz.cuni.mff.d3s.cloudmigration.data.NodeConfiguration;
 import cz.cuni.mff.d3s.deeco.annotations.*;
 import cz.cuni.mff.d3s.deeco.annotations.Process;
+import cz.cuni.mff.d3s.deeco.annotations.processor.AnnotationProcessor;
 import cz.cuni.mff.d3s.deeco.model.runtime.api.ComponentInstance;
 import cz.cuni.mff.d3s.deeco.task.ParamHolder;
+import cz.cuni.mff.d3s.deeco.task.ProcessContext;
 
 @Component
 public class Device {
@@ -26,8 +29,8 @@ public class Device {
 	public Collection<MonitorDefinition> oldDeviceMonitorDefs;
 
 	
-	public Map<MonitorDefinition, ComponentInstance> monitors;
-	public Map<MonitorDefinition, NFPDeviceData> nfpDeviceData;
+	public Map<MonitorDefinition, String> monitors;
+	public Map<String, NFPDeviceData> nfpDeviceData;
 	
 	
 	public Device(NodeConfiguration nodeCfg) {
@@ -41,26 +44,46 @@ public class Device {
 	
 	@Process
 	public static void produceNFPDeviceData(
-			@TriggerOnChange @In("monitors") Map<MonitorDefinition, ComponentInstance> monitors,
-			@InOut("nfpDeviceData") ParamHolder<Map<MonitorDefinition, NFPDeviceData>> nfpDeviceData
+			@In("nodeCfg") NodeConfiguration nodeCfg,
+			@TriggerOnChange @In("monitors") Map<MonitorDefinition, String> monitors,
+			@InOut("nfpDeviceData") ParamHolder<Map<String, NFPDeviceData>> nfpDeviceData
 			) {
-		//TODO: produce NFPDeviceData
-		
+		for (String m: monitors.values()) {
+			nfpDeviceData.value.put(m, 
+					new NFPDeviceData(nodeCfg.getName()));
+		}		
 	}
 	
 	@Process
 	public static void createMonitors(
+			@In("nodeCfg") NodeConfiguration nodeCfg,
 			@TriggerOnChange @In("deviceMonitorDefs") Collection<MonitorDefinition> deviceMonitorDefs,
 			@InOut("oldDeviceMonitorDefs") ParamHolder<Collection<MonitorDefinition>> oldDeviceMonitorDefs,
-			@InOut("monitors") ParamHolder<Map<MonitorDefinition, ComponentInstance>> monitors
+			@InOut("monitors") ParamHolder<Map<MonitorDefinition, String>> monitors
 			) {
 		// check whether something actually changed
 		if (oldDeviceMonitorDefs.value.equals(deviceMonitorDefs))
 			return;
 		
-		//TODO: instantiate monitors
-		// TODO: add support for model@runtime reflection
-		System.out.println("Installing monitors for defs: " + deviceMonitorDefs + ", old: " + oldDeviceMonitorDefs.value);
+		// TODO: instantiate monitors
+		// TODO: add support for model@runtime reflection		
+		
+				
+		for (MonitorDefinition def: deviceMonitorDefs) {
+			if (monitors.value.containsKey(def))
+				continue;
+			
+			System.out.println(String.format("(%s) Installing monitor for %s", nodeCfg.getName(), def));
+			
+			try {
+				Monitor m = new Monitor(def);
+				// FIXME: this should be done via invokeAndWait()
+				String instanceID = ProcessContext.startComponent(m);				
+				monitors.value.put(def, instanceID);
+			} catch (Exception e) {
+				System.out.println("Installing monitor failed.");
+			}			
+		}
 		
 		oldDeviceMonitorDefs.value = deviceMonitorDefs;
 
@@ -68,12 +91,15 @@ public class Device {
 	
 	@Process
 	@PeriodicScheduling(1000)
-	public static void getAcceptMonitors(			
+	public static void getAcceptMonitors(
+			@In("nodeCfg") NodeConfiguration nodeCfg,
 			@InOut("acceptsMonitors") ParamHolder<Boolean> acceptsMonitors
 			) {
 		Boolean nextVal = new Random().nextBoolean();
-		if (!acceptsMonitors.value.equals(nextVal)) 
-			System.out.println("Changing acceptsMonitors==" + nextVal);
+		if (!acceptsMonitors.value.equals(nextVal)) { 
+			System.out.println(String.format(
+					"(%s) Changing acceptsMonitors==%s", nodeCfg.getName(), nextVal));
+		}
 		acceptsMonitors.value = nextVal;
 	}
 		

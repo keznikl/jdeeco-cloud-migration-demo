@@ -14,16 +14,18 @@ public class Device2Monitor {
 	
 	@Membership
 	public static boolean membership(
-			@In("coord.monitors") Map<MonitorDefinition, ComponentInstance> monitors,
-			@In("member.monitorDef") MonitorDefinition monitorDef) {
-		return monitors.containsKey(monitorDef);
+			@In("coord.monitors") Map<MonitorDefinition, String> monitors,
+			@In("coord.nfpDeviceData") Map<String, NFPDeviceData> nfpDeviceData,
+			@In("member.id") String monitorID) {
+		return monitors.containsValue(monitorID) && nfpDeviceData.containsKey(monitorID);
 	}
 
 	@KnowledgeExchange
 	public static void knowledgeExchange(
-			@In("coord.nfpDeviceData") NFPDeviceData nfpDeviceData,
+			@In("coord.nfpDeviceData") Map<String, NFPDeviceData> nfpDeviceData,
+			@In("member.id") String monitorID,
 			@Out("member.monitorDeviceData") ParamHolder<NFPDeviceData> monitorDeviceData) {
-		monitorDeviceData.value = nfpDeviceData;
+		monitorDeviceData.value = nfpDeviceData.get(monitorID);
 	}
 
 }

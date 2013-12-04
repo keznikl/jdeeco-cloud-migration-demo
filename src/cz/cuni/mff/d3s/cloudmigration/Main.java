@@ -33,13 +33,13 @@ public class Main {
 		
 		Planner p = new Planner(ac);
 		
-		Device d1 = new Device(new NodeConfiguration());
-		Device d2 = new Device(new NodeConfiguration());
+		Device d1 = new Device(new NodeConfiguration("N1"));
+		Device d2 = new Device(new NodeConfiguration("N2"));
 		
 		AnnotationProcessor processor = new AnnotationProcessor(RuntimeMetadataFactoryExt.eINSTANCE);
 		RuntimeMetadata model = RuntimeMetadataFactoryExt.eINSTANCE.createRuntimeMetadata();		
 		
-		processor.process(model, p, d1, d2, Planner2Device.class, Device2Monitor.class, Monitor2Planner.class);
+		processor.process(model, Planner2Device.class, Device2Monitor.class, Monitor2Planner.class, p, d1, d2);
 		
 		RuntimeFrameworkBuilder builder = new RuntimeFrameworkBuilder(
 				new RuntimeConfiguration(

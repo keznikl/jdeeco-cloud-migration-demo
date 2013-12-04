@@ -1,9 +1,12 @@
 package cz.cuni.mff.d3s.cloudmigration.component;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import cz.cuni.mff.d3s.cloudmigration.data.ApplicationConfiguration;
@@ -40,10 +43,17 @@ public class Planner {
 			@Out("plan") ParamHolder<Plan> plan
 			) {
 		// TODO: compute plan;
-		Set<String> alternatives = new HashSet<>();
-		for (Map<String, NFPData> monitorData: altNfpData.values()) {
-			alternatives.addAll(monitorData.keySet());
-		}
+		List<String> alternatives = new ArrayList<>();
+		for (Entry<MonitorDefinition, Map<String, NFPData>> entry: altNfpData.entrySet()){			
+			for (NFPData nfpdata: entry.getValue().values()) {
+				if (nfpdata != null) {
+					alternatives.add(String.format("%s@%s", 
+							entry.getKey().getMonitorComponentID(), 
+							nfpdata.getDeviceName()));
+				}
+			}			
+		}		
+		
 		System.out.println("Computing a plan for alternatives: " + alternatives.toString());
 	}
 	
